@@ -23,9 +23,9 @@ int main(int argc, char *argv[]) {
   ofile << num_passenger << "\n";
 
   for (int i = 0; i < num_passenger; i++) {
-    ofile << i << " " << randeng() % MAP_MAX << " " << randeng() % MAP_MAX << " "
+    ofile << i + 1 << " " << randeng() % MAP_MAX << " " << randeng() % MAP_MAX << " "
           << randeng() % MAP_MAX << " " << randeng() % MAP_MAX << " "
-          << randeng() % 4 + 1 << "\n";
+          << randeng() % 3 + 1 << "\n";
   }
 
   return 0;

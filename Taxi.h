@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <list>
 
 namespace paras {
 class Taxi {
