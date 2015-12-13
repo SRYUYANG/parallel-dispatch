@@ -13,7 +13,7 @@ int Passenger::serialize(std::string &msg) {
   return msg.size() + 1;
 }
 
-Passenger deserialize(std::string msg) {
+Passenger Passenger::deserialize(std::string msg) {
   Passenger tmp;
   std::vector<std::string> tokens;
   Util::split(msg, ',', tokens);

@@ -7,13 +7,15 @@ int Taxi::serialize(std::string &msg) {
          std::to_string(cur_y) + '*';
   msg += std::to_string(schedule.size()) + '*';
   for (long item : schedule) {
-    msg += std::to_string(item) + ' ';
+    msg += std::to_string(item) + '@';
   }
+
+  msg += '*';
 
   return msg.size() + 1;
 }
 
-Taxi deserialize(std::string msg) {
+Taxi Taxi::deserialize(std::string msg) {
   std::vector<std::string> tokens;
   Util::split(msg, '*', tokens);
 
@@ -24,7 +26,7 @@ Taxi deserialize(std::string msg) {
 
   int schedule_size = std::stod(tokens[3]);
   std::vector<std::string> schedule_tokens;
-  Util::split(tokens[4], ' ', schedule_tokens);
+  Util::split(tokens[4], '@', schedule_tokens);
 
   for (int i = 0; i < schedule_size; i++) {
     tmp.schedule.push_back(std::stol(schedule_tokens[i]));

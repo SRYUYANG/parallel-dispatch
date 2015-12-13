@@ -9,5 +9,6 @@ void Util::split(const std::string &s, char delim,
   while (std::getline(ss, item, delim)) {
     elems.push_back(item);
   }
+  ss.clear();
 }
 }

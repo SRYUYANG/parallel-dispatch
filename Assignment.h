@@ -2,6 +2,7 @@
 #define _ASSIGNMENT_H_
 
 #include <unordered_map>
+#include <string>
 #include "Taxi.h"
 #include "Passenger.h"
 
@@ -11,8 +12,11 @@ public:
   std::vector<Taxi> schedule;
   std::unordered_map<long, Passenger> passenger_list;
 
-  //Cost of the assignment
-  double cost;
+  int serialize(std::string &msg);
+  static Assignment* deserialize(std::string msg);
+
+  Assignment();
+  Assignment(std::string file_name);
 };
 }
 
