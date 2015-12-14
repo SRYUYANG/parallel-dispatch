@@ -64,10 +64,11 @@ void coordinator(std::string file_name) {
       double cost = 0;
       MPI_Recv(&cost, 1, MPI_DOUBLE, mpi_status.MPI_SOURCE, REPORT,
                MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+      /*
       std::cout << "### Received proc " << mpi_status.MPI_SOURCE
                 << " report. Cost: " << cost << " best_cost: " << best_cost
                 << std::endl;
+      */
 
       if (cost < best_cost) {
         int allowed = 1;
@@ -87,11 +88,11 @@ void coordinator(std::string file_name) {
         best_assignment = *new_ass;
         best_cost = cost;
 
-        std::cout << "### Update complete" << std::endl;
+        //std::cout << "### Update complete" << std::endl;
 
         delete new_ass;
       } else {
-        std::cout << "### Request rejected" << std::endl;
+        //std::cout << "### Request rejected" << std::endl;
         int allowed = 0;
         MPI_Send(&allowed, 1, MPI_INT, mpi_status.MPI_SOURCE, REPORT,
                  MPI_COMM_WORLD);

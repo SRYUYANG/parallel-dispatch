@@ -98,8 +98,8 @@ void simulatedAnnealing(Assignment *ass, int idle) {
                MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       count = 1;
 
-      std::cout << "@@@ Proc " << rank << " check cost: " << local_cost
-                << " global " << global_minimum << std::endl;
+      //std::cout << "@@@ Proc " << rank << " check cost: " << local_cost
+      //          << " global " << global_minimum << std::endl;
     }
 
     if (local_cost >= global_minimum) {
@@ -220,7 +220,7 @@ void worker() {
       simulatedAnnealing(new_ass, buff);
       double cost = new_ass->getCost();
 
-      std::cout << "@@@ Proc: " << rank << " report: " << cost << std::endl;
+      //std::cout << "@@@ Proc: " << rank << " report: " << cost << std::endl;
 
       reportAssignment(new_ass, cost);
 
