@@ -88,7 +88,7 @@ void coordinator(std::string file_name) {
         best_assignment = *new_ass;
         best_cost = cost;
 
-        //std::cout << "### Update complete" << std::endl;
+        std::cout << "### Update complete" << std::endl;
 
         delete new_ass;
       } else {

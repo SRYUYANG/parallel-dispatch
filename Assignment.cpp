@@ -203,6 +203,7 @@ void Assignment::initAssignment() {
   schedule = new_schedule;
 
   std::cout << "@@@ Initial Cost after insertion: " << getCost() << std::endl;
+  printSchedule();
 }
 
 double

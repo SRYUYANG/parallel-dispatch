@@ -88,6 +88,8 @@ void simulatedAnnealing(Assignment *ass, int idle) {
 
     ass->schedule[target_taxi] = taxi_removed_new;
 
+    /*
+
     //------------Check if there exists global_minimum
     double local_cost = ass->getCost();
 
@@ -110,6 +112,8 @@ void simulatedAnnealing(Assignment *ass, int idle) {
       continue;
     }
     //-----------END CHECKING
+
+    */
 
     int add_index = 0;
     std::vector<long> best_vec = ass->schedule[0].schedule;
@@ -161,7 +165,7 @@ void simulatedAnnealing(Assignment *ass, int idle) {
       double roll = dis(randeng);
 
       if (roll > possibility) {
-        // reject
+        std::cout << "@@@ reject" << std::endl;
         ass->schedule[target_taxi] = taxi_removed_old;
       } else {
         // accept and update the current assignment;
