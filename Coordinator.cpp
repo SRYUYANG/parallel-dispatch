@@ -6,6 +6,7 @@
 #include <cstring>
 #include "Util.h"
 #include "Assignment.h"
+#include "Protocal.h"
 
 namespace paras{
 void coordinator(std::string file_name) {
@@ -23,7 +24,39 @@ void coordinator(std::string file_name) {
   strcpy(buff, msg.c_str());
   MPI_Bcast(&msg_size, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
   MPI_Bcast(buff, msg_size, MPI_CHAR, 0, MPI_COMM_WORLD);
-  
+
+  int q_count = 0;
+  int q_limit = assignment.schedule.size();
+
+  int idle_count;
+  MPI_Comm_size(MPI_COMM_WORLD, &idle_count);
+
+  idle_count--;
+
+  while(true) {
+    if (idle_count == 0) {
+      break;
+    }
+    MPI_Status mpi_status;
+    int garbage = 0;
+    MPI_Recv(&garbage, 1, MPI_INTEGER, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &mpi_status);
+    if (mpi_status.MPI_TAG == REQUIRE_JOB) {
+      if (q_count < q_limit) {
+        MPI_Request mpi_request;
+        MPI_Isend(&q_count, 1, MPI_INTEGER, mpi_status.MPI_SOURCE, REQUIRE_JOB, MPI_COMM_WORLD, &mpi_request);
+        q_count++;
+      } else {
+        MPI_Request mpi_request;
+        MPI_Isend(&q_count, 1, MPI_INTEGER, mpi_status.MPI_SOURCE, EXIT, MPI_COMM_WORLD, &mpi_request);
+        idle_count--;
+      }
+    }
+  }
+
+
+
+
+
   MPI_Barrier(MPI_COMM_WORLD);
   delete[] buff;
 }

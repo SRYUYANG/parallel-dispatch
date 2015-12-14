@@ -10,9 +10,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cassert>
+#include "Protocal.h"
 
 namespace paras {
-void simulatedAnnealing(Assignment *ass, int lower_bound, int upper_bound) {
+void simulatedAnnealing(Assignment *ass, int idle) {
   /**
    * Include ramdom generator
    */
@@ -23,7 +24,7 @@ void simulatedAnnealing(Assignment *ass, int lower_bound, int upper_bound) {
    * Initialize cooling parameters
    */
   int num_taxi = ass->schedule.size();
-  double temperature = 1000;
+  double temperature = 10000;
   double cooling_rate = 0.99;
   double absolute_temp = 0.00001;
   double minimum_cost = ass->getCost();
@@ -51,7 +52,7 @@ void simulatedAnnealing(Assignment *ass, int lower_bound, int upper_bound) {
     // have non zero number of vehicles assigned.
     do {
       target_taxi = randeng() % num_taxi;
-    } while ((target_taxi >= lower_bound && target_taxi < upper_bound) ||
+    } while ((target_taxi == idle ) ||
              ass->schedule[target_taxi].schedule.empty());
 
     Taxi taxi_removed_old = ass->schedule[target_taxi];
@@ -90,7 +91,7 @@ void simulatedAnnealing(Assignment *ass, int lower_bound, int upper_bound) {
     // Find best taxi to insert the passenger.
     for (int i = 0; i < ass->schedule.size(); i++) {
       // Limit the swap inside of the partitioned space
-      if (i >= lower_bound && i < upper_bound)
+      if (i ==idle)
         continue;
 
       Taxi &taxi = ass->schedule[i];
@@ -151,10 +152,6 @@ void simulatedAnnealing(Assignment *ass, int lower_bound, int upper_bound) {
       converge_count = 0;
     }
 
-    if (converge_count == 1000) {
-      break;
-    }
-
     //Cooling down
     temperature *= cooling_rate;
   }
@@ -171,37 +168,36 @@ void worker() {
   MPI_Bcast(buff, msg_size, MPI_CHAR, 0, MPI_COMM_WORLD);
 
   paras::Assignment *ass = paras::Assignment::deserialize(std::string(buff));
+
+  int rank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
   delete[] buff;
 
-  int num_taxi = ass->schedule.size();
+  while(true) {
 
-  /**
-   * Define search space which should be disjoint.
-   */
-  int rank, size;
-  int lower_bound = -1;
-  int upper_bound = -1;
+    int garbage = 0;
+    MPI_Request mpi_request;
+    MPI_Isend(&garbage, 1, MPI_INTEGER, 0, REQUIRE_JOB, MPI_COMM_WORLD, &mpi_request);
 
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int buff = 0;
+    MPI_Status mpi_status;
+    MPI_Recv(&buff, 1, MPI_INTEGER, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &mpi_status);
 
-  // Don't count coordinator.
-  size = size - 1;
-
-  // More than one processor
-  if (size != 1) {
-    if (rank != size) {
-      lower_bound = num_taxi / size * (rank - 1);
-      upper_bound = num_taxi / size * (rank);
-    } else {
-      lower_bound = num_taxi / size * (rank - 1);
-      upper_bound = num_taxi;
+    if (mpi_status.MPI_TAG == REQUIRE_JOB) {
+      paras::Assignment *new_ass = new paras::Assignment();
+      (*new_ass) = *ass;
+      std::cout << "@@@ Proc " << rank << " assigned " << buff << std::endl;
+      simulatedAnnealing(new_ass, buff);
+      std::cout << "@@@ Proc: " << rank << " report: " << new_ass->getCost() << std::endl;
+      delete new_ass;
+    } else if (mpi_status.MPI_TAG == EXIT) {
+      std::cout << "@@@ Proc: " << rank << " exit" << std::endl;
+      break;
     }
   }
 
-  simulatedAnnealing(ass, lower_bound, upper_bound);
 
-  std::cout << "@@@ Proc: " << rank << " report: " << ass->getCost() << std::endl;
 
   MPI_Barrier(MPI_COMM_WORLD);
 }
