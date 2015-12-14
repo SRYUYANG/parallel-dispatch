@@ -31,6 +31,7 @@ void simulatedAnnealing(Assignment *ass, int idle) {
   double cooling_rate = 0.99;
   double absolute_temp = 0.00001;
   double minimum_cost = ass->getCost();
+  double global_minimum = std::numeric_limits<double>::max();
 
   /**
    * Excange result every 100 iterations
@@ -86,6 +87,29 @@ void simulatedAnnealing(Assignment *ass, int idle) {
                     taxi_removed_new.schedule.end(), -target_pass));
 
     ass->schedule[target_taxi] = taxi_removed_new;
+
+    //------------Check if there exists global_minimum
+    double local_cost = ass->getCost();
+
+    if ((count > exchange_num || count == 1) && local_cost < global_minimum) {
+      int garbage = 0;
+      MPI_Send(&garbage, 1, MPI_INT, 0, CHECK_GLOBAL_MINIMUM, MPI_COMM_WORLD);
+      MPI_Recv(&global_minimum, 1, MPI_DOUBLE, 0, CHECK_GLOBAL_MINIMUM,
+               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      count = 1;
+
+      std::cout << "@@@ Proc " << rank << " check cost: " << local_cost
+                << " global " << global_minimum << std::endl;
+    }
+
+    if (local_cost >= global_minimum) {
+      // roll back
+      // std::cout << "@@@ Proc " << rank << " prune" << std::endl;
+      ass->schedule[target_taxi] = taxi_removed_old;
+      temperature *= cooling_rate;
+      continue;
+    }
+    //-----------END CHECKING
 
     int add_index = 0;
     std::vector<long> best_vec = ass->schedule[0].schedule;

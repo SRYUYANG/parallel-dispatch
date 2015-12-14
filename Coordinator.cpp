@@ -97,6 +97,11 @@ void coordinator(std::string file_name) {
                  MPI_COMM_WORLD);
       }
     }
+
+    if (mpi_status.MPI_TAG == CHECK_GLOBAL_MINIMUM) {
+      MPI_Send(&best_cost, 1, MPI_DOUBLE, mpi_status.MPI_SOURCE,
+               CHECK_GLOBAL_MINIMUM, MPI_COMM_WORLD);
+    }
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
