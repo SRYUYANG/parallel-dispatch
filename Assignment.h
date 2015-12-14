@@ -6,6 +6,7 @@
 #include <string>
 #include "Taxi.h"
 #include "Passenger.h"
+#include <limits>
 
 namespace paras {
 class Assignment {
