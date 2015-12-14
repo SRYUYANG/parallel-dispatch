@@ -162,7 +162,7 @@ void worker() {
    * Get initialize result.
    */
   int msg_size;
-  MPI_Bcast(&msg_size, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&msg_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
   char *buff = new char[msg_size];
   MPI_Bcast(buff, msg_size, MPI_CHAR, 0, MPI_COMM_WORLD);
@@ -178,11 +178,11 @@ void worker() {
 
     int garbage = 0;
     MPI_Request mpi_request;
-    MPI_Isend(&garbage, 1, MPI_INTEGER, 0, REQUIRE_JOB, MPI_COMM_WORLD, &mpi_request);
+    MPI_Isend(&garbage, 1, MPI_INT, 0, REQUIRE_JOB, MPI_COMM_WORLD, &mpi_request);
 
     int buff = 0;
     MPI_Status mpi_status;
-    MPI_Recv(&buff, 1, MPI_INTEGER, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &mpi_status);
+    MPI_Recv(&buff, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &mpi_status);
 
     if (mpi_status.MPI_TAG == REQUIRE_JOB) {
       paras::Assignment *new_ass = new paras::Assignment();

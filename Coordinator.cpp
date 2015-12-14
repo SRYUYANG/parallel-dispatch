@@ -22,7 +22,7 @@ void coordinator(std::string file_name) {
   int msg_size = assignment.serialize(msg);
   char *buff = new char[msg_size];
   strcpy(buff, msg.c_str());
-  MPI_Bcast(&msg_size, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&msg_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(buff, msg_size, MPI_CHAR, 0, MPI_COMM_WORLD);
 
   int q_count = 0;
@@ -39,15 +39,15 @@ void coordinator(std::string file_name) {
     }
     MPI_Status mpi_status;
     int garbage = 0;
-    MPI_Recv(&garbage, 1, MPI_INTEGER, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &mpi_status);
+    MPI_Recv(&garbage, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &mpi_status);
     if (mpi_status.MPI_TAG == REQUIRE_JOB) {
       if (q_count < q_limit) {
         MPI_Request mpi_request;
-        MPI_Isend(&q_count, 1, MPI_INTEGER, mpi_status.MPI_SOURCE, REQUIRE_JOB, MPI_COMM_WORLD, &mpi_request);
+        MPI_Isend(&q_count, 1, MPI_INT, mpi_status.MPI_SOURCE, REQUIRE_JOB, MPI_COMM_WORLD, &mpi_request);
         q_count++;
       } else {
         MPI_Request mpi_request;
-        MPI_Isend(&q_count, 1, MPI_INTEGER, mpi_status.MPI_SOURCE, EXIT, MPI_COMM_WORLD, &mpi_request);
+        MPI_Isend(&q_count, 1, MPI_INT, mpi_status.MPI_SOURCE, EXIT, MPI_COMM_WORLD, &mpi_request);
         idle_count--;
       }
     }
