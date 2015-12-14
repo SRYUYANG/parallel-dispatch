@@ -13,6 +13,9 @@
 #include "Protocal.h"
 
 namespace paras {
+
+void reportAssignment(Assignment *ass, double cost);
+
 void simulatedAnnealing(Assignment *ass, int idle) {
   /**
    * Include ramdom generator
@@ -52,7 +55,7 @@ void simulatedAnnealing(Assignment *ass, int idle) {
     // have non zero number of vehicles assigned.
     do {
       target_taxi = randeng() % num_taxi;
-    } while ((target_taxi == idle ) ||
+    } while ((target_taxi == idle) ||
              ass->schedule[target_taxi].schedule.empty());
 
     Taxi taxi_removed_old = ass->schedule[target_taxi];
@@ -91,7 +94,7 @@ void simulatedAnnealing(Assignment *ass, int idle) {
     // Find best taxi to insert the passenger.
     for (int i = 0; i < ass->schedule.size(); i++) {
       // Limit the swap inside of the partitioned space
-      if (i ==idle)
+      if (i == idle)
         continue;
 
       Taxi &taxi = ass->schedule[i];
@@ -152,7 +155,7 @@ void simulatedAnnealing(Assignment *ass, int idle) {
       converge_count = 0;
     }
 
-    //Cooling down
+    // Cooling down
     temperature *= cooling_rate;
   }
 }
@@ -174,11 +177,12 @@ void worker() {
 
   delete[] buff;
 
-  while(true) {
+  while (true) {
 
     int garbage = 0;
     MPI_Request mpi_request;
-    MPI_Isend(&garbage, 1, MPI_INT, 0, REQUIRE_JOB, MPI_COMM_WORLD, &mpi_request);
+    MPI_Isend(&garbage, 1, MPI_INT, 0, REQUIRE_JOB, MPI_COMM_WORLD,
+              &mpi_request);
 
     int buff = 0;
     MPI_Status mpi_status;
@@ -188,8 +192,14 @@ void worker() {
       paras::Assignment *new_ass = new paras::Assignment();
       (*new_ass) = *ass;
       std::cout << "@@@ Proc " << rank << " assigned " << buff << std::endl;
+
       simulatedAnnealing(new_ass, buff);
-      std::cout << "@@@ Proc: " << rank << " report: " << new_ass->getCost() << std::endl;
+      double cost = new_ass->getCost();
+
+      std::cout << "@@@ Proc: " << rank << " report: " << cost << std::endl;
+
+      reportAssignment(new_ass, cost);
+
       delete new_ass;
     } else if (mpi_status.MPI_TAG == EXIT) {
       std::cout << "@@@ Proc: " << rank << " exit" << std::endl;
@@ -197,8 +207,30 @@ void worker() {
     }
   }
 
-
-
   MPI_Barrier(MPI_COMM_WORLD);
+}
+
+void reportAssignment(Assignment *ass, double cost) {
+  std::string out_msg;
+  MPI_Request mpi_request;
+  int garbage = 0;
+  MPI_Send(&garbage, 1, MPI_INT, 0, REPORT, MPI_COMM_WORLD);
+  MPI_Send(&cost, 1, MPI_DOUBLE, 0, REPORT, MPI_COMM_WORLD);
+
+  int allowed = 0;
+  MPI_Status mpi_status;
+  MPI_Recv(&allowed, 1, MPI_INT, 0, REPORT, MPI_COMM_WORLD, &mpi_status);
+
+  if (allowed == 0)
+    return;
+
+  int msg_size = ass->serialize(out_msg);
+
+  char *msg_buff = new char[msg_size];
+
+  strcpy(msg_buff, out_msg.c_str());
+
+  MPI_Send(&msg_size, 1, MPI_INT, 0, REPORT, MPI_COMM_WORLD);
+  MPI_Send(msg_buff, msg_size, MPI_CHAR, 0, REPORT, MPI_COMM_WORLD);
 }
 }

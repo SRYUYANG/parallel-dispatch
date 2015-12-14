@@ -276,4 +276,14 @@ Assignment::calculateCost(std::vector<Taxi> &temp_schedule,
 double Assignment::getCost() {
   return Assignment::calculateCost(schedule, passenger_list);
 }
+
+void Assignment::printSchedule() {
+  for (int i = 0; i < schedule.size(); i++) {
+    std::cout << "Taxi: " << i << " Schedule: ";
+    for (int j = 0; j < schedule[i].schedule.size(); j++) {
+      std::cout << schedule[i].schedule[j] << " " ;
+    }
+    std::cout << std::endl;
+  }
+}
 }

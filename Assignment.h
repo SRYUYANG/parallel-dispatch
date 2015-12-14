@@ -34,6 +34,7 @@ public:
                               std::unordered_map<long, Passenger> &pass_list);
 
   double getCost();
+  void printSchedule();
 };
 }
 
