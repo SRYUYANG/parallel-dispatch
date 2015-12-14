@@ -27,9 +27,9 @@ void simulatedAnnealing(Assignment *ass, int idle) {
    * Initialize cooling parameters
    */
   int num_taxi = ass->schedule.size();
-  double temperature = 10000;
+  double temperature = 1000;
   double cooling_rate = 0.99;
-  double absolute_temp = 0.00001;
+  double absolute_temp = 0.000001;
   double minimum_cost = ass->getCost();
   double global_minimum = std::numeric_limits<double>::max();
 
